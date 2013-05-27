@@ -3,8 +3,8 @@ package de.kuei.metafora.reflectiontool.server.util;
 import java.util.Date;
 import java.util.Vector;
 
+import de.kuei.metafora.reflectiontool.server.xml.XMLMessage;
 import de.kuei.metafora.reflectiontool.shared.LandmarkData;
-import de.kuei.metafora.xmltools.XMLMessage;
 
 public class LandmarkDataGenerator {
 
@@ -28,8 +28,6 @@ public class LandmarkDataGenerator {
 		String classification = message.getClassification();
 		String description = message.getDescription();
 		String nodeId = message.getObjectId();
-
-		System.err.println("Resource: " + resource);
 
 		return new LandmarkData(time, users, resource, planningToolMap, tool,
 				landmarkType, activityType, sendingTool, challengeName,

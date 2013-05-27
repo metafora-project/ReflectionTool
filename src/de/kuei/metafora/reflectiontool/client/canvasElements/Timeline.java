@@ -1,6 +1,7 @@
 package de.kuei.metafora.reflectiontool.client.canvasElements;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,8 +59,6 @@ public class Timeline {
 
 	private int unit = 0;
 
-	boolean landmarktest = false;
-
 	private Landmark selectedLandmark = null;
 
 	public Timeline(Canvas canvas, ScrollPanel scroll, LayoutPanel viewPanel) {
@@ -91,27 +90,6 @@ public class Timeline {
 			public void run() {
 				updateTime();
 				drawTimeline();
-
-				if (landmarktest) {
-					landmarktest = false;
-
-					for (int i = 0; i < 5; i++) {
-						Landmark lm = new Landmark(
-								new Date(currentTime.getTime() - i),
-								null,
-								"http://metafora.ku.de/images/attitudes/critical.svg",
-								null, null, null, null, null, null, null, null,
-								null, "landmark at "
-										+ (currentTime.getTime() - i),
-								"myLandmark" + i, false, false, false, null,
-								null, null);
-
-						addLandmark(lm);
-					}
-
-					logger.log(Level.INFO, "Test landmark generated!");
-
-				}
 			}
 		};
 		timer.scheduleRepeating(5000);
@@ -406,9 +384,6 @@ public class Timeline {
 			return;
 		}
 
-		if (landmarkbar.getStartTime().getTime() < startTime.getTime()) {
-			startTime.setTime(landmarkbar.getStartTime().getTime());
-		}
 		insertLandmarkBar(landmarkbar);
 
 		viewPanel.add(landmarkbar);
@@ -433,40 +408,68 @@ public class Timeline {
 
 	private void layoutLandmarkBars() {
 
+		HashMap<String, Vector<LandmarkBar>> categories = new HashMap<String, Vector<LandmarkBar>>();
+
 		for (int i = 0; i < landmarkbars.size(); i++) {
-			LandmarkBar landmarkbar = landmarkbars.get(i);
+			LandmarkBar bar = landmarkbars.get(i);
+			String categroy = bar.getLandmark().getPlanningToolCategory();
+			if (categories.containsKey(categroy)) {
+				categories.get(categroy).add(bar);
+			} else {
+				Vector<LandmarkBar> bars = new Vector<LandmarkBar>();
+				bars.add(bar);
+				categories.put(categroy, bars);
+			}
+		}
 
-			long time = landmarkbar.getStartTime().getTime()
-					- startTime.getTime();
-			double minutes = (double) time / 60000.0;
-			int x = (int) (lenghtOfAMinute * minutes);
+		int yoffset = requiredHeight;
+		int lineheight = 0;
 
-			int y = requiredHeight;
+		for (String category : categories.keySet()) {
+			Vector<LandmarkBar> bars = categories.get(category);
 
-			if (i > 0) {
+			for (int i = 0; i < bars.size(); i++) {
 
-				LandmarkBar lmbbefore = landmarkbars.get(i - 1);
+				logger.log(Level.INFO, category + " starts at " + yoffset
+						+ " with " + bars.size() + " elements");
 
-				int end = lmbbefore.getX() + lmbbefore.getWidth();
+				LandmarkBar landmarkbar = bars.get(i);
+				long time = landmarkbar.getStartTime().getTime()
+						- startTime.getTime();
 
-				if (end >= x) {
-					y = lmbbefore.getY() + 20;
+				double minutes = (double) time / 60000.0;
 
-					requiredHeight = y + landmarkbar.getHeight() + 20;
+				int x = (int) (lenghtOfAMinute * minutes);
+				int y = yoffset;
+
+				if (i > 0) {
+					LandmarkBar lmbbefore = bars.get(i - 1);
+
+					int end = lmbbefore.getX() + lmbbefore.getWidth();
+
+					if (end >= x || !lmbbefore.isFinished()) {
+						y = lmbbefore.getY() + lmbbefore.getHeight() + 5;
+						yoffset += lmbbefore.getHeight() + 5;
+						requiredHeight = y + landmarkbar.getHeight() + 20;
+					}
 				}
+
+				landmarkbar.setX(x);
+				landmarkbar.setY(y);
+				landmarkbar.getElement().getStyle().setZIndex(20 + i);
+
+				landmarkbar.setSize((landmarkbar.getWidth() - 2) + "px",
+						(landmarkbar.getHeight() - 2) + "px");
+
+				lineheight = landmarkbar.getHeight();
+
+				viewPanel.setWidgetLeftWidth(landmarkbar, x, Unit.PX,
+						landmarkbar.getWidth(), Unit.PX);
+				viewPanel.setWidgetTopHeight(landmarkbar, y, Unit.PX,
+						landmarkbar.getHeight(), Unit.PX);
 			}
 
-			landmarkbar.setX(x);
-			landmarkbar.setY(y);
-			landmarkbar.getElement().getStyle().setZIndex(20 + i);
-
-			landmarkbar.setSize((landmarkbar.getWidth() - 2) + "px",
-					(landmarkbar.getHeight() - 2) + "px");
-
-			viewPanel.setWidgetLeftWidth(landmarkbar, x, Unit.PX,
-					landmarkbar.getWidth(), Unit.PX);
-			viewPanel.setWidgetTopHeight(landmarkbar, y, Unit.PX,
-					landmarkbar.getHeight(), Unit.PX);
+			yoffset += 20 + lineheight;
 		}
 	}
 

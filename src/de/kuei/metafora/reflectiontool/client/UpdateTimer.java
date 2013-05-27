@@ -13,6 +13,8 @@ import de.kuei.metafora.reflectiontool.shared.LandmarkData;
 
 public class UpdateTimer {
 
+	private static final int SLEEP_TIME = 2500;
+
 	private final ServerRequestAsync serverRequest = GWT
 			.create(ServerRequest.class);
 
@@ -51,7 +53,7 @@ public class UpdateTimer {
 	}
 
 	public void start() {
-		timer.scheduleRepeating(2500);
+		timer.scheduleRepeating(SLEEP_TIME);
 	}
 
 }

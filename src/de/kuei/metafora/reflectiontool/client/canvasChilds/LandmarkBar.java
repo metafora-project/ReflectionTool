@@ -25,12 +25,13 @@ public class LandmarkBar extends HTML implements MouseOverHandler,
 
 	private static final String borderColor = "#0000FF";
 	private static final String highlightBorderColor = "#FF0000";
+	private static final String backgroundColor = "#AAAAAA";
 	private static final int landmarkBarMinWidth = 15;
 	private static final int landmarkBarHeight = 15;
 
 	private Vector<Landmark> landmarks;
 
-	private boolean isFinished = false;
+	private boolean finished = false;
 
 	private int x;
 	private int y;
@@ -69,7 +70,7 @@ public class LandmarkBar extends HTML implements MouseOverHandler,
 		height = landmarkBarHeight;
 
 		setSize(width + "px", height + "px");
-		getElement().getStyle().setBackgroundColor("#AAAAAA");
+		getElement().getStyle().setBackgroundColor(backgroundColor);
 		getElement().getStyle().setBorderColor(borderColor);
 		getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
 		getElement().getStyle().setBorderWidth(1, Unit.PX);
@@ -85,6 +86,10 @@ public class LandmarkBar extends HTML implements MouseOverHandler,
 					+ " (" + category + ")</span>");
 		}
 
+	}
+
+	public void setBackgroundColor(String color) {
+		getElement().getStyle().setBackgroundColor(color);
 	}
 
 	public int getX() {
@@ -137,12 +142,12 @@ public class LandmarkBar extends HTML implements MouseOverHandler,
 					ReflectionToolHtml.reflectionToolInstance.getTimeline()
 							.getLenghtOfAMinute());
 		}
-		isFinished = landmarks.lastElement().isFinished();
+		finished = landmarks.lastElement().isFinished();
 	}
 
 	public void update(Date currentTime, double lenghtOfAMinute) {
 		long time = 0;
-		if (!isFinished) {
+		if (!finished) {
 			time = currentTime.getTime()
 					- landmarks.firstElement().getTime().getTime();
 		} else {
@@ -188,5 +193,13 @@ public class LandmarkBar extends HTML implements MouseOverHandler,
 				continue;
 			lm.setFocus(select);
 		}
+	}
+
+	public Landmark getLandmark() {
+		return landmarks.firstElement();
+	}
+
+	public boolean isFinished() {
+		return finished;
 	}
 }

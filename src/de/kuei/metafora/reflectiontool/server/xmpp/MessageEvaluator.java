@@ -10,11 +10,14 @@ import org.w3c.dom.Document;
 
 import de.kuei.metafora.reflectiontool.server.util.LandmarkDataGenerator;
 import de.kuei.metafora.reflectiontool.server.xml.XMLException;
+import de.kuei.metafora.reflectiontool.server.xml.XMLMessage;
 import de.kuei.metafora.reflectiontool.server.xml.XMLUtils;
 import de.kuei.metafora.reflectiontool.shared.LandmarkData;
-import de.kuei.metafora.xmltools.XMLMessage;
 
 public class MessageEvaluator implements PacketListener {
+
+	private static final String[] colors = new String[] { "#63AF27", "#5188C7",
+			"#868686", "#DF2B27", "#AEDDDE", "#DEB000", "#8B4A97", "#D8DADA" };
 
 	private static MessageEvaluator instance = null;
 
@@ -27,8 +30,11 @@ public class MessageEvaluator implements PacketListener {
 
 	private HashMap<String, HashMap<String, Vector<LandmarkData>>> landmarks;
 
+	private HashMap<String, String> categoryColors;
+
 	private MessageEvaluator() {
 		landmarks = new HashMap<String, HashMap<String, Vector<LandmarkData>>>();
+		categoryColors = new HashMap<String, String>();
 	}
 
 	public Vector<LandmarkData> getLandmarks(String group, String challengeId) {
@@ -39,8 +45,6 @@ public class MessageEvaluator implements PacketListener {
 	}
 
 	public void handleMessage(XMLMessage message) {
-		System.err.println("Handle message");
-
 		String group = message.getProperty("group_id");
 
 		if (group != null) {
@@ -123,8 +127,6 @@ public class MessageEvaluator implements PacketListener {
 			LandmarkData landmark = LandmarkDataGenerator.generateLandmark(
 					message, started, finished);
 
-			System.err.println("new landmark: " + challengeId + ", " + group);
-
 			String sendingTool = message.getProperty("sending_tool");
 
 			if (sendingTool != null
@@ -132,7 +134,6 @@ public class MessageEvaluator implements PacketListener {
 				String id = message.getObjectId();
 				String type = message.getObjectType();
 				type = type.replaceAll("\n", "");
-				System.err.println("id: " + id + ", type: " + type);
 				if (id != null) {
 					if (type.matches(".*<.*>.*")) {
 						handlePlanningToolLandmark(message, landmark);
@@ -163,10 +164,21 @@ public class MessageEvaluator implements PacketListener {
 			String name = doc.getElementsByTagName("name").item(0)
 					.getAttributes().getNamedItem("value").getNodeValue();
 
-			System.err.println("PlanningToolLandmark: " + picture + ", "
-					+ category + ",  " + name);
+			String color = "#AAAAAA";
 
-			landmark.setPlanningToolData(picture, name, category);
+			if (category != null) {
+				if (categoryColors.containsKey(category)) {
+					color = categoryColors.get(category);
+				} else {
+					int colorIndex = (int) (Math.random() * 8);
+					color = colors[colorIndex];
+					categoryColors.put(category, color);
+					System.err.println("ReflectionTool: MessageEvaluator: "
+							+ color + " assigned to category " + category);
+				}
+			}
+
+			landmark.setPlanningToolData(picture, name, category, color);
 
 		} catch (XMLException e) {
 			System.err.println(e.getMessage());

@@ -51,6 +51,7 @@ public class Landmark extends HTML implements MouseOverHandler,
 	private boolean planningTool = false;
 	private String planningToolPicture = null;
 	private String planningToolCategory = null;
+	private String planningToolCategoryColor = "#AAAAAA";
 	private String planningToolName = null;
 
 	private boolean started = false;
@@ -72,16 +73,18 @@ public class Landmark extends HTML implements MouseOverHandler,
 						.getDescription(), data.getNodeId(), data.isStarted(),
 				data.isFinished(), data.isPlanningTool(), data
 						.getPlanningToolPicture(), data.getPlanningToolName(),
-				data.getPlanningToolCategory());
+				data.getPlanningToolCategory(), data
+						.getPlanningToolCategoryColor());
 	}
 
+	@SuppressWarnings("deprecation")
 	public Landmark(Date time, Vector<String> users, String resource,
 			String planningToolMap, String tool, String landmarkType,
 			String activityType, String sendingTool, String challengeName,
 			String groupId, String token, String classification,
 			String description, String nodeId, boolean started,
 			boolean finished, boolean planningTool, String picture,
-			String name, String category) {
+			String name, String category, String categoryColor) {
 		super();
 
 		logger.setLevel(Level.INFO);
@@ -109,6 +112,7 @@ public class Landmark extends HTML implements MouseOverHandler,
 			this.planningToolName = name;
 			this.planningToolCategory = category;
 			this.planningToolPicture = picture;
+			this.planningToolCategoryColor = categoryColor;
 		}
 
 		Date now = new Date();
@@ -275,6 +279,10 @@ public class Landmark extends HTML implements MouseOverHandler,
 
 	public String getPlanningToolCategory() {
 		return planningToolCategory;
+	}
+
+	public String getPlanningToolCategoryColor() {
+		return planningToolCategoryColor;
 	}
 
 	public String getPlanningToolName() {

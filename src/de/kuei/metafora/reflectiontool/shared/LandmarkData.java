@@ -26,6 +26,8 @@ public class LandmarkData implements Serializable {
 	private String planningToolCategory = null;
 	private String planningToolName = null;
 
+	private String planningToolCategoryColor = "#AAAAAA";
+
 	private boolean started = false;
 	private boolean finished = false;
 
@@ -123,11 +125,13 @@ public class LandmarkData implements Serializable {
 		return nodeId;
 	}
 
-	public void setPlanningToolData(String picture, String name, String category) {
+	public void setPlanningToolData(String picture, String name,
+			String category, String color) {
 		this.planningTool = true;
 		this.planningToolPicture = picture;
 		this.planningToolName = name;
 		this.planningToolCategory = category;
+		this.planningToolCategoryColor = color;
 	}
 
 	public String getPlanningToolPicture() {
@@ -136,6 +140,10 @@ public class LandmarkData implements Serializable {
 
 	public String getPlanningToolCategory() {
 		return planningToolCategory;
+	}
+
+	public String getPlanningToolCategoryColor() {
+		return planningToolCategoryColor;
 	}
 
 	public String getPlanningToolName() {
