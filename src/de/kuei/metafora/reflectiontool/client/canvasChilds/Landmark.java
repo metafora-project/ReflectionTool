@@ -74,7 +74,8 @@ public class Landmark extends HTML implements MouseOverHandler,
 				data.isFinished(), data.isPlanningTool(), data
 						.getPlanningToolPicture(), data.getPlanningToolName(),
 				data.getPlanningToolCategory(), data
-						.getPlanningToolCategoryColor());
+						.getPlanningToolCategoryColor(), data
+						.getLandmarkColor());
 	}
 
 	@SuppressWarnings("deprecation")
@@ -84,7 +85,8 @@ public class Landmark extends HTML implements MouseOverHandler,
 			String groupId, String token, String classification,
 			String description, String nodeId, boolean started,
 			boolean finished, boolean planningTool, String picture,
-			String name, String category, String categoryColor) {
+			String name, String category, String categoryColor,
+			String landmarkColor) {
 		super();
 
 		logger.setLevel(Level.INFO);
@@ -104,6 +106,8 @@ public class Landmark extends HTML implements MouseOverHandler,
 		this.description = description;
 		this.nodeId = nodeId;
 
+		logger.log(Level.INFO, "Landmark: New Landmark " + nodeId);
+
 		this.started = started;
 		this.finished = finished;
 
@@ -117,7 +121,9 @@ public class Landmark extends HTML implements MouseOverHandler,
 
 		Date now = new Date();
 		if (time.getTime() > now.getTime()) {
-			this.time = now;
+			long offset = time.getTime() - now.getTime();
+			ReflectionToolHtml.reflectionToolInstance.getTimeline()
+					.setCurrentTimeOffest(offset);
 		}
 
 		setTitle(description + " (" + time.getHours() + ":" + time.getMinutes()
@@ -135,6 +141,8 @@ public class Landmark extends HTML implements MouseOverHandler,
 			getElement().getStyle().setBackgroundColor(backgroundFinished);
 		} else if (started) {
 			getElement().getStyle().setBackgroundColor(backgroundStarted);
+		} else if (landmarkColor != null) {
+			getElement().getStyle().setBackgroundColor(landmarkColor);
 		}
 
 		getElement().getStyle().setBorderColor(borderColor);

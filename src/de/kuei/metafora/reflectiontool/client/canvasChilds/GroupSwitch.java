@@ -15,7 +15,7 @@ public class GroupSwitch extends Landmark {
 			String description) {
 		super(time, users, null, null, null, indicatorType, activityType,
 				sendingTool, challengeName, groupId, token, classification,
-				description, null, false, false, false, null, null, null, "#AAAAAA");
+				description, null, false, false, false, null, null, null, "#AAAAAA", "#FFFF00");
 
 		logger.setLevel(Level.INFO);
 

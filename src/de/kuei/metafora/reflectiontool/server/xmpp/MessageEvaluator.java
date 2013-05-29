@@ -1,5 +1,6 @@
 package de.kuei.metafora.reflectiontool.server.xmpp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -8,6 +9,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.w3c.dom.Document;
 
+import de.kuei.metafora.reflectiontool.server.util.HistoryRequest;
 import de.kuei.metafora.reflectiontool.server.util.LandmarkDataGenerator;
 import de.kuei.metafora.reflectiontool.server.xml.XMLException;
 import de.kuei.metafora.reflectiontool.server.xml.XMLMessage;
@@ -18,6 +20,12 @@ public class MessageEvaluator implements PacketListener {
 
 	private static final String[] colors = new String[] { "#63AF27", "#5188C7",
 			"#868686", "#DF2B27", "#AEDDDE", "#DEB000", "#8B4A97", "#D8DADA" };
+
+	private static final String[] lmColors = new String[] { "#9B760B",
+			"#63788B", "#951315", "#9AB17B", "#6DB04D", "#BB7133", "#3AA2BB",
+			"#939393" };
+	private static final String[] toolnames = new String[] { "planning",
+			"lasad", "piki", "sus", "expresser", "juggler", "math" };
 
 	private static MessageEvaluator instance = null;
 
@@ -37,11 +45,31 @@ public class MessageEvaluator implements PacketListener {
 		categoryColors = new HashMap<String, String>();
 	}
 
+	public void initLandmarks(String group, String challengeId) {
+		if (!landmarks.containsKey(group)) {
+			landmarks.put(group, new HashMap<String, Vector<LandmarkData>>());
+		}
+
+		HashMap<String, Vector<LandmarkData>> groupLandmarks = landmarks
+				.get(group);
+		if (!groupLandmarks.containsKey(challengeId)) {
+			groupLandmarks.put(challengeId, new Vector<LandmarkData>());
+		}
+
+		try {
+			HistoryRequest.request(challengeId, group);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public Vector<LandmarkData> getLandmarks(String group, String challengeId) {
-		if (landmarks.containsKey(group))
-			return landmarks.get(group).get(challengeId);
-		else
-			return null;
+		if (!landmarks.containsKey(group)
+				|| !landmarks.get(group).containsKey(challengeId)){
+			initLandmarks(group, challengeId);
+		}
+
+		return landmarks.get(group).get(challengeId);
 	}
 
 	public void handleMessage(XMLMessage message) {
@@ -71,13 +99,14 @@ public class MessageEvaluator implements PacketListener {
 		String type = message.getObjectType();
 		type = type.toLowerCase();
 
-		// String groupId = message.getProperty("group_id");
-
 		if (type.equals("login")) {
+			System.err.println("Login: " + message.getDescription());
 			// handleLogin(message);
 		} else if (type.equals("logout")) {
+			System.err.println("Logout: " + message.getDescription());
 			// handleLogout(message);
 		} else if (type.equals("group_switch")) {
+			System.err.println("Group Switch: " + message.getDescription());
 			// handleGroupSwitch(message);
 		} else {
 			System.err.println("Unknown object type " + type);
@@ -118,36 +147,74 @@ public class MessageEvaluator implements PacketListener {
 
 		if (challengeId != null) {
 			String group = message.getProperty("group_id");
-			HashMap<String, Vector<LandmarkData>> groupMap = landmarks
-					.get(group);
-			if (!groupMap.containsKey(challengeId)) {
-				groupMap.put(challengeId, new Vector<LandmarkData>());
-			}
 
-			LandmarkData landmark = LandmarkDataGenerator.generateLandmark(
-					message, started, finished);
+			if (group != null) {
+				
+				if (!landmarks.containsKey(group)
+						|| !landmarks.get(group).containsKey(challengeId)){
+					initLandmarks(group, challengeId);
+				}
 
-			String sendingTool = message.getProperty("sending_tool");
+				HashMap<String, Vector<LandmarkData>> groupMap = landmarks
+						.get(group);
 
-			if (sendingTool != null
-					&& sendingTool.toLowerCase().contains("planning")) {
-				String id = message.getObjectId();
-				String type = message.getObjectType();
-				type = type.replaceAll("\n", "");
-				if (id != null) {
-					if (type.matches(".*<.*>.*")) {
-						handlePlanningToolLandmark(message, landmark);
-					} else {
-						System.err
-								.println("Type " + type + " is no inner xml.");
+				if (!groupMap.containsKey(challengeId)) {
+					groupMap.put(challengeId, new Vector<LandmarkData>());
+				}
+
+				String sendingTool = message.getProperty("sending_tool");
+
+				String color = lmColors[lmColors.length - 1];
+				if (sendingTool != null && sendingTool.length() > 0) {
+					for (int i = 0; i < toolnames.length; i++) {
+						if (sendingTool.toLowerCase().contains(toolnames[i])) {
+							color = lmColors[i];
+							break;
+						}
 					}
 				}
+
+				if (activityType.toLowerCase().equals("help_request")) {
+					color = "#FF0000";
+				}
+
+				LandmarkData landmark = LandmarkDataGenerator.generateLandmark(
+						message, started, finished, color);
+
+				if (sendingTool != null
+						&& sendingTool.toLowerCase().contains("planning")) {
+
+					String id = message.getObjectId();
+					String type = message.getObjectType();
+					type = type.replaceAll("\n", "");
+
+					if (id != null) {
+						if (type.matches(".*<.*>.*")) {
+							handlePlanningToolLandmark(message, landmark);
+						} else {
+							System.err.println("Type " + type
+									+ " is no inner xml.");
+						}
+					}
+				}
+
+				System.err.println("New landmark for " + group + ", "
+						+ challengeId);
+
+				groupMap.get(challengeId).add(landmark);
+			} else {
+				String msg = message.getXMLMessage();
+				msg = msg.replaceAll("\n", " ");
+				System.err
+						.println("ReflectionTool.MessageEvaluator: Group id is null! "
+								+ msg);
 			}
-
-			groupMap.get(challengeId).add(landmark);
-
 		} else {
-			System.err.println("Message challenge id is null!");
+			String msg = message.getXMLMessage();
+			msg = msg.replaceAll("\n", " ");
+			System.err
+					.println("ReflectionTool.MessageEvaluator: Challenge id is null! "
+							+ msg);
 		}
 
 	}
@@ -187,24 +254,16 @@ public class MessageEvaluator implements PacketListener {
 
 	@Override
 	public void processPacket(Packet packet) {
-		if (packet.getFrom().contains(
-				XMPPConnection.getInstance().getAnalysisChannel())) {
-
-			if (packet != null && packet instanceof Message) {
-				String message = ((Message) packet).getBody();
-				message = message.replaceAll("\n", "");
-				if (message
-						.matches(".*[<][ ]*description[ ]*[>].*[<][ ]*[/]description[ ]*[>].*")) {
-					XMLMessage msg = new XMLMessage(message);
-					handleMessage(msg);
-				} else {
-					System.err.println("Message is no xml message: " + message);
-				}
+		if (packet != null && packet instanceof Message) {
+			String message = ((Message) packet).getBody();
+			message = message.replaceAll("\n", "");
+			if (message
+					.matches(".*[<][ ]*description[ ]*[>].*[<][ ]*[/]description[ ]*[>].*")) {
+				XMLMessage msg = new XMLMessage(message);
+				handleMessage(msg);
+			} else {
+				System.err.println("Message is no xml message: " + message);
 			}
-		} else {
-			System.err.println("XMPP message from " + packet.getFrom()
-					+ " dropped.");
 		}
 	}
-
 }

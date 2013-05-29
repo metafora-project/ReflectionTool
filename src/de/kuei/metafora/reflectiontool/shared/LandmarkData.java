@@ -27,6 +27,8 @@ public class LandmarkData implements Serializable {
 	private String planningToolName = null;
 
 	private String planningToolCategoryColor = "#AAAAAA";
+	
+	private String landmarkColor = "#AAAAAA";
 
 	private boolean started = false;
 	private boolean finished = false;
@@ -39,7 +41,7 @@ public class LandmarkData implements Serializable {
 			String planningToolMap, String tool, String landmarkType,
 			String activityType, String sendingTool, String challengeName,
 			String groupId, String token, String classification,
-			String description, String nodeId, boolean started, boolean finished) {
+			String description, String nodeId, String landmarkColor, boolean started, boolean finished) {
 		super();
 
 		this.time = time;
@@ -56,6 +58,7 @@ public class LandmarkData implements Serializable {
 		this.classification = classification;
 		this.description = description;
 		this.nodeId = nodeId;
+		this.landmarkColor = landmarkColor;
 
 		this.started = started;
 		this.finished = finished;
@@ -152,5 +155,9 @@ public class LandmarkData implements Serializable {
 
 	public boolean isPlanningTool() {
 		return planningTool;
+	}
+	
+	public String getLandmarkColor(){
+		return landmarkColor;
 	}
 }

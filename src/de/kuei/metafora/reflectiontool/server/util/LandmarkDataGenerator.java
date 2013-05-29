@@ -9,7 +9,7 @@ import de.kuei.metafora.reflectiontool.shared.LandmarkData;
 public class LandmarkDataGenerator {
 
 	public static LandmarkData generateLandmark(XMLMessage message,
-			boolean started, boolean finished) {
+			boolean started, boolean finished, String landmarkColor) {
 
 		Date time = message.getActionDate();
 		Vector<String> users = message.getOriginators();
@@ -31,8 +31,8 @@ public class LandmarkDataGenerator {
 
 		return new LandmarkData(time, users, resource, planningToolMap, tool,
 				landmarkType, activityType, sendingTool, challengeName,
-				groupId, token, classification, description, nodeId, started,
-				finished);
+				groupId, token, classification, description, nodeId,
+				landmarkColor, started, finished);
 
 	}
 

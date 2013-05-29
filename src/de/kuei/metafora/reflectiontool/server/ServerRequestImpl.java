@@ -14,19 +14,15 @@ public class ServerRequestImpl extends RemoteServiceServlet implements
 	@Override
 	public Vector<LandmarkData> getLandmarks(String group, String challengeId,
 			int first) {
+		
 		Vector<LandmarkData> landmarks = MessageEvaluator.getInstance()
 				.getLandmarks(group, challengeId);
-		if (landmarks != null) {
-			if (first <= 0) {
-				return landmarks;
-			} else {
-				Vector<LandmarkData> lms = new Vector<LandmarkData>();
-				lms.addAll(landmarks.subList(first, landmarks.size()));
-				return lms;
-			}
+		if (first <= 0) {
+			return landmarks;
 		} else {
-			return new Vector<LandmarkData>();
+			Vector<LandmarkData> lms = new Vector<LandmarkData>();
+			lms.addAll(landmarks.subList(first, landmarks.size()));
+			return lms;
 		}
 	}
-
 }

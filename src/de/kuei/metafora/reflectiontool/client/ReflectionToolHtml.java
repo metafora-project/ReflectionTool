@@ -61,8 +61,6 @@ public class ReflectionToolHtml implements EntryPoint, MouseDownHandler,
 
 	private String group = null;
 	private String challengeId = null;
-	private String user = null;
-	private String token = null;
 
 	public void onModuleLoad() {
 		reflectionToolInstance = this;
@@ -75,8 +73,6 @@ public class ReflectionToolHtml implements EntryPoint, MouseDownHandler,
 
 		group = UrlDecoder.getParameter("groupid");
 		challengeId = UrlDecoder.getParameter("challengeid");
-		token = UrlDecoder.getParameter("token");
-		user = UrlDecoder.getParameter("user");
 
 		canvas = Canvas.createIfSupported();
 

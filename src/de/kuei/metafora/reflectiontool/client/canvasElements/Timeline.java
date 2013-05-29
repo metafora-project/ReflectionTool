@@ -45,6 +45,8 @@ public class Timeline {
 
 	private double lenghtOfAMinute;
 
+	private long currentTimeOffset = 0;
+
 	private CssColor color;
 
 	private int requiredWidth;
@@ -99,7 +101,7 @@ public class Timeline {
 	}
 
 	private void updateTime() {
-		currentTime.setTime(System.currentTimeMillis());
+		currentTime.setTime(System.currentTimeMillis() + currentTimeOffset);
 		updateLandmarkBars();
 	}
 
@@ -123,7 +125,14 @@ public class Timeline {
 		}
 
 		if (landmark.getTime().getTime() < startTime.getTime()) {
+			logger.log(Level.INFO,
+					"ReflectionTool: Timeline: Start time changed from "
+							+ startTime.getTime() + " to "
+							+ landmark.getTime().getTime());
 			startTime.setTime(landmark.getTime().getTime());
+			logger.log(Level.INFO, "ReflectionTool: Timeline: New start time: "
+					+ startTime.getTime());
+			drawTimeline();
 		}
 		insertLandmark(landmark);
 
@@ -199,6 +208,8 @@ public class Timeline {
 
 	private void layoutLandmarks() {
 
+		int yoffset = 0;
+		
 		for (int i = 0; i < landmarks.size(); i++) {
 			Landmark landmark = landmarks.get(i);
 
@@ -218,7 +229,10 @@ public class Timeline {
 				if (end >= x) {
 					y = lmbefore.getY() + 10;
 
-					requiredHeight = y + landmark.getHeight() + 10;
+					yoffset = y + landmark.getHeight() + 10;
+					if(requiredHeight < yoffset){
+						requiredHeight = yoffset;
+					}
 				}
 			}
 
@@ -428,10 +442,11 @@ public class Timeline {
 		for (String category : categories.keySet()) {
 			Vector<LandmarkBar> bars = categories.get(category);
 
-			for (int i = 0; i < bars.size(); i++) {
+			Vector<Vector<LandmarkBar>> lines = new Vector<Vector<LandmarkBar>>();
+			lines.add(new Vector<LandmarkBar>());
+			Vector<LandmarkBar> line = lines.firstElement();
 
-				logger.log(Level.INFO, category + " starts at " + yoffset
-						+ " with " + bars.size() + " elements");
+			for (int i = 0; i < bars.size(); i++) {
 
 				LandmarkBar landmarkbar = bars.get(i);
 				long time = landmarkbar.getStartTime().getTime()
@@ -443,15 +458,31 @@ public class Timeline {
 				int y = yoffset;
 
 				if (i > 0) {
-					LandmarkBar lmbbefore = bars.get(i - 1);
-
-					int end = lmbbefore.getX() + lmbbefore.getWidth();
-
-					if (end >= x || !lmbbefore.isFinished()) {
-						y = lmbbefore.getY() + lmbbefore.getHeight() + 5;
-						yoffset += lmbbefore.getHeight() + 5;
-						requiredHeight = y + landmarkbar.getHeight() + 20;
+					// try to find line to add bar
+					boolean found = false;
+					for (int l = 0; l < lines.size(); l++) {
+						line = lines.get(l);
+						if (line.lastElement().isFinished()) {
+							LandmarkBar last = line.lastElement();
+							if ((last.getX() + last.getWidth()) < x) {
+								found = true;
+								y = last.getY();
+								line.add(landmarkbar);
+							}
+						}
 					}
+
+					if (!found) {
+						// create new line
+						yoffset += landmarkbar.getHeight() + 5;
+						y = yoffset;
+						requiredHeight = y + landmarkbar.getHeight() + 20;
+						Vector<LandmarkBar> newLine = new Vector<LandmarkBar>();
+						newLine.add(landmarkbar);
+						lines.add(newLine);
+					}
+				} else {
+					line.add(landmarkbar);
 				}
 
 				landmarkbar.setX(x);
@@ -477,6 +508,12 @@ public class Timeline {
 		for (LandmarkBar lmb : landmarkbars) {
 			lmb.update(currentTime, lenghtOfAMinute);
 		}
+	}
+
+	public void setCurrentTimeOffest(long offset) {
+		this.currentTimeOffset = offset;
+		updateTime();
+		drawTimeline();
 	}
 
 }
