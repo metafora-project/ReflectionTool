@@ -17,6 +17,7 @@ public class StartupServlet extends HttpServlet {
 
 	public static XmppMUC command = null;
 	public static String tomcatserver = "https://metaforaserver.ku.de";
+	public static String apacheserver = "http://metaforaserver.ku.de";
 
 	public void init() {
 
@@ -28,6 +29,13 @@ public class StartupServlet extends HttpServlet {
 		StartupServlet.tomcatserver = tomcatServer.getServer();
 
 		System.err.println("Tomcat server: " + tomcatserver);
+
+		ServerDescription apacheServer = MysqlInitConnector.getInstance()
+				.getAServer("apache");
+
+		StartupServlet.apacheserver = apacheServer.getServer();
+
+		System.err.println("Apache server: " + apacheserver);
 
 		System.err.println("Config XMPP...");
 

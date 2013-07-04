@@ -82,6 +82,14 @@ public class HistoryRequest {
 			}
 
 			limitstart += limit;
+
+			System.err
+					.println("ReflectionTool: HistoryRequest: request(): DB request: Challenge: "
+							+ challengeId
+							+ ", Group: "
+							+ group
+							+ ", Records: "
+							+ limitstart);
 		} while (lines.size() - lastsize == 100);
 
 		for (int i = 0; i < lines.size(); i++) {
@@ -95,6 +103,10 @@ public class HistoryRequest {
 				}
 			}
 		}
+
+		System.err
+				.println("ReflectionTool: HistoryRequest: request(): DB request for challenge "
+						+ challengeId + "and group " + group + " finished.");
 	}
 
 }

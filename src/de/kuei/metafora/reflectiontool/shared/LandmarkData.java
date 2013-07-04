@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Vector;
 
-public class LandmarkData implements Serializable {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class LandmarkData implements Serializable, IsSerializable {
 
 	private Date time;
 	private Vector<String> users;
@@ -27,11 +29,16 @@ public class LandmarkData implements Serializable {
 	private String planningToolName = null;
 
 	private String planningToolCategoryColor = "#AAAAAA";
-	
+
 	private String landmarkColor = "#AAAAAA";
 
 	private boolean started = false;
 	private boolean finished = false;
+
+	private String l2l2Category = null;
+	private String l2l2Url = null;
+
+	int index = -1;
 
 	public LandmarkData() {
 
@@ -41,7 +48,9 @@ public class LandmarkData implements Serializable {
 			String planningToolMap, String tool, String landmarkType,
 			String activityType, String sendingTool, String challengeName,
 			String groupId, String token, String classification,
-			String description, String nodeId, String landmarkColor, boolean started, boolean finished) {
+			String description, String nodeId, String landmarkColor,
+			boolean started, boolean finished, String l2l2, String l2l2Url,
+			int index) {
 		super();
 
 		this.time = time;
@@ -62,6 +71,11 @@ public class LandmarkData implements Serializable {
 
 		this.started = started;
 		this.finished = finished;
+
+		this.l2l2Category = l2l2;
+		this.l2l2Url = l2l2Url;
+
+		this.index = index;
 	}
 
 	public boolean isStarted() {
@@ -74,6 +88,14 @@ public class LandmarkData implements Serializable {
 
 	public Date getTime() {
 		return time;
+	}
+
+	public String getL2L2Category() {
+		return l2l2Category;
+	}
+
+	public String getL2L2Url() {
+		return l2l2Url;
 	}
 
 	public Vector<String> getUsers() {
@@ -156,8 +178,12 @@ public class LandmarkData implements Serializable {
 	public boolean isPlanningTool() {
 		return planningTool;
 	}
-	
-	public String getLandmarkColor(){
+
+	public String getLandmarkColor() {
 		return landmarkColor;
+	}
+
+	public int getIndex() {
+		return index;
 	}
 }

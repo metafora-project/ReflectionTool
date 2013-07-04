@@ -65,7 +65,7 @@ public class MessageEvaluator implements PacketListener {
 
 	public Vector<LandmarkData> getLandmarks(String group, String challengeId) {
 		if (!landmarks.containsKey(group)
-				|| !landmarks.get(group).containsKey(challengeId)){
+				|| !landmarks.get(group).containsKey(challengeId)) {
 			initLandmarks(group, challengeId);
 		}
 
@@ -149,9 +149,8 @@ public class MessageEvaluator implements PacketListener {
 			String group = message.getProperty("group_id");
 
 			if (group != null) {
-				
 				if (!landmarks.containsKey(group)
-						|| !landmarks.get(group).containsKey(challengeId)){
+						|| !landmarks.get(group).containsKey(challengeId)) {
 					initLandmarks(group, challengeId);
 				}
 
@@ -165,6 +164,7 @@ public class MessageEvaluator implements PacketListener {
 				String sendingTool = message.getProperty("sending_tool");
 
 				String color = lmColors[lmColors.length - 1];
+
 				if (sendingTool != null && sendingTool.length() > 0) {
 					for (int i = 0; i < toolnames.length; i++) {
 						if (sendingTool.toLowerCase().contains(toolnames[i])) {
@@ -174,12 +174,14 @@ public class MessageEvaluator implements PacketListener {
 					}
 				}
 
-				if (activityType.toLowerCase().equals("help_request")) {
+				if (activityType != null
+						&& activityType.toLowerCase().equals("help_request")) {
 					color = "#FF0000";
 				}
 
 				LandmarkData landmark = LandmarkDataGenerator.generateLandmark(
-						message, started, finished, color);
+						message, started, finished, color,
+						groupMap.get(challengeId).size());
 
 				if (sendingTool != null
 						&& sendingTool.toLowerCase().contains("planning")) {
@@ -199,7 +201,8 @@ public class MessageEvaluator implements PacketListener {
 				}
 
 				System.err.println("New landmark for " + group + ", "
-						+ challengeId);
+						+ challengeId + " with description "
+						+ landmark.getDescription());
 
 				groupMap.get(challengeId).add(landmark);
 			} else {

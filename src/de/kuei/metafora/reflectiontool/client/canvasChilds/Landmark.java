@@ -75,7 +75,7 @@ public class Landmark extends HTML implements MouseOverHandler,
 						.getPlanningToolPicture(), data.getPlanningToolName(),
 				data.getPlanningToolCategory(), data
 						.getPlanningToolCategoryColor(), data
-						.getLandmarkColor());
+						.getLandmarkColor(), data.getL2L2Url());
 	}
 
 	@SuppressWarnings("deprecation")
@@ -86,7 +86,7 @@ public class Landmark extends HTML implements MouseOverHandler,
 			String description, String nodeId, boolean started,
 			boolean finished, boolean planningTool, String picture,
 			String name, String category, String categoryColor,
-			String landmarkColor) {
+			String landmarkColor, String l2l2Url) {
 		super();
 
 		logger.setLevel(Level.INFO);
@@ -148,6 +148,11 @@ public class Landmark extends HTML implements MouseOverHandler,
 		getElement().getStyle().setBorderColor(borderColor);
 		getElement().getStyle().setBorderStyle(BorderStyle.SOLID);
 		getElement().getStyle().setBorderWidth(1, Unit.PX);
+
+		if (l2l2Url != null) {
+			setHTML("<img src=\"" + l2l2Url + "\" width=\"" + ((width * 3) / 4)
+					+ "\" style=\"position: absolute; top:0px; left:0px;\" />");
+		}
 
 		addMouseOverHandler(this);
 		addMouseOutHandler(this);

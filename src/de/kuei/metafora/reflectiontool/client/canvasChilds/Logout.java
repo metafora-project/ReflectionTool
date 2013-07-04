@@ -16,7 +16,7 @@ public class Logout extends Landmark {
 		super(time, users, null, null, null, indicatorType, activityType,
 				sendingTool, challengeName, groupId, token, classification,
 				description, null, false, false, false, null, null, null,
-				"#AAAAAA", "#FF0000");
+				"#AAAAAA", "#FF0000", null);
 
 		logger.setLevel(Level.INFO);
 

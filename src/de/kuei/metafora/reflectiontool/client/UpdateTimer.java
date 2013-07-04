@@ -4,6 +4,7 @@ import java.util.Vector;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import de.kuei.metafora.reflectiontool.client.canvasChilds.Landmark;
@@ -21,7 +22,7 @@ public class UpdateTimer {
 	private final Timer timer;
 	private final String group;
 	private final String challengeId;
-	private int messageCount = 0;
+	private int index = 0;
 
 	public UpdateTimer(String groupName, String challenge) {
 		this.group = groupName;
@@ -31,7 +32,7 @@ public class UpdateTimer {
 
 			@Override
 			public void run() {
-				serverRequest.getLandmarks(group, challengeId, messageCount,
+				serverRequest.getLandmarks(group, challengeId, index,
 						new AsyncCallback<Vector<LandmarkData>>() {
 
 							@Override
@@ -40,7 +41,10 @@ public class UpdateTimer {
 									Landmark landmark = new Landmark(lmd);
 									ReflectionToolHtml.reflectionToolInstance
 											.addLandmark(landmark);
-									messageCount++;
+
+									if (index < lmd.getIndex()) {
+										index = lmd.getIndex();
+									}
 								}
 							}
 
@@ -53,7 +57,15 @@ public class UpdateTimer {
 	}
 
 	public void start() {
-		timer.scheduleRepeating(SLEEP_TIME);
+		String browser = UpdateTimer.getBrowser();
+		if (browser.contains("firefox")) {
+			Window.alert("The Reflection Tool isn't supported in Firefox at the moment. Please use Chrome.");
+		} else {
+			timer.scheduleRepeating(SLEEP_TIME);
+		}
 	}
 
+	public static native String getBrowser() /*-{
+		return navigator.userAgent.toLowerCase();
+	}-*/;
 }

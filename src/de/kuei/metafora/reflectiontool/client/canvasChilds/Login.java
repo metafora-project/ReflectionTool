@@ -16,7 +16,7 @@ public class Login extends Landmark {
 		super(time, users, null, null, null, indicatorType, activityType,
 				sendingTool, challengeName, groupId, token, classification,
 				description, null, false, false, false, null, null, null,
-				"#AAAAAA", "#00FF00");
+				"#AAAAAA", "#00FF00", null);
 
 		logger.setLevel(Level.INFO);
 
