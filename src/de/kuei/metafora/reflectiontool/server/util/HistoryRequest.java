@@ -4,11 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.Vector;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -18,7 +18,7 @@ import de.kuei.metafora.reflectiontool.server.xmpp.MessageEvaluator;
 
 public class HistoryRequest {
 
-	private static void trustAll() {
+	private static SSLSocketFactory trustAll() {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -42,9 +42,11 @@ public class HistoryRequest {
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
 			HttpsURLConnection
 					.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			return sc.getSocketFactory();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return null;
 	}
 
 	public static void request(String challengeId, String group)
@@ -53,7 +55,7 @@ public class HistoryRequest {
 		System.err.println("ReflectionTool: History request for: "
 				+ challengeId + ", " + group);
 
-		trustAll();
+		SSLSocketFactory factory = trustAll();
 
 		int limit = 100;
 		int limitstart = 0;
@@ -70,11 +72,45 @@ public class HistoryRequest {
 					+ "&limitstart=" + limitstart;
 
 			URL url = new URL(urltext);
+			System.err.println("History Request: " + url.toString());
 
-			URLConnection connection = url.openConnection();
+			BufferedReader reader = null;
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					connection.getInputStream()));
+			try {
+				// URLConnection connection = url.openConnection();
+				HttpsURLConnection connection = (HttpsURLConnection) url
+						.openConnection();
+				connection.setSSLSocketFactory(factory);
+
+				reader = new BufferedReader(new InputStreamReader(
+						connection.getInputStream()));
+
+			} catch (Exception ex) {
+				System.err.println("History request failed with: "
+						+ ex.getMessage() + ". Trying port 8443.");
+				try {
+					urltext = StartupServlet.tomcatserver
+							+ ":8443"
+							+ "/metaforaservicemodul/metaforaservicemodul/logrequest?chat=analysis%25&group="
+							+ group + "&challenge=" + challengeId + "&limit="
+							+ limit + "&limitstart=" + limitstart;
+
+					url = new URL(urltext);
+					System.err.println("Url: "+url.toString());
+					
+					HttpsURLConnection connection = (HttpsURLConnection) url
+							.openConnection();
+					connection.setSSLSocketFactory(factory);
+
+					reader = new BufferedReader(new InputStreamReader(
+							connection.getInputStream()));
+
+				} catch (Exception innerex) {
+					System.err.println("History request failed! "
+							+ innerex.getMessage());
+					innerex.printStackTrace();
+				}
+			}
 
 			String line = null;
 			while ((line = reader.readLine()) != null) {
