@@ -6,8 +6,10 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Vector;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
@@ -49,6 +51,17 @@ public class HistoryRequest {
 		return null;
 	}
 
+	private static HostnameVerifier getAnalphabeticVerifier() {
+		HostnameVerifier verifier = new HostnameVerifier() {
+
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+		return verifier;
+	}
+
 	public static void request(String challengeId, String group)
 			throws IOException {
 
@@ -81,12 +94,16 @@ public class HistoryRequest {
 				HttpsURLConnection connection = (HttpsURLConnection) url
 						.openConnection();
 				connection.setSSLSocketFactory(factory);
+				connection.setHostnameVerifier(getAnalphabeticVerifier());
+
+				// connection.setHostnameVerifier(v)
 
 				reader = new BufferedReader(new InputStreamReader(
 						connection.getInputStream()));
 
 			} catch (Exception ex) {
-				System.err.println("History request failed with: "
+				System.err.println("History request failed ("
+						+ ex.getClass().getCanonicalName() + ") with: "
 						+ ex.getMessage() + ". Trying port 8443.");
 				try {
 					urltext = StartupServlet.tomcatserver
@@ -96,11 +113,12 @@ public class HistoryRequest {
 							+ limit + "&limitstart=" + limitstart;
 
 					url = new URL(urltext);
-					System.err.println("Url: "+url.toString());
-					
+					System.err.println("Url: " + url.toString());
+
 					HttpsURLConnection connection = (HttpsURLConnection) url
 							.openConnection();
 					connection.setSSLSocketFactory(factory);
+					connection.setHostnameVerifier(getAnalphabeticVerifier());
 
 					reader = new BufferedReader(new InputStreamReader(
 							connection.getInputStream()));
@@ -110,6 +128,10 @@ public class HistoryRequest {
 							+ innerex.getMessage());
 					innerex.printStackTrace();
 				}
+			}
+
+			if (reader == null) {
+				return;
 			}
 
 			String line = null;

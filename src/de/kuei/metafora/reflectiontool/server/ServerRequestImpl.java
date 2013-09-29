@@ -61,6 +61,10 @@ public class ServerRequestImpl extends RemoteServiceServlet implements
 		if (index <= 0 || landmarks == null || landmarks.size() == 0) {
 			return 0;
 		} else {
+			if (landmarks.lastElement().getIndex() == index) {
+				return landmarks.size();
+			}
+
 			int pos = landmarks.size() - 1;
 			while (pos > 0 && landmarks.get(pos).getIndex() > index) {
 				pos--;
