@@ -5,11 +5,61 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Vector;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import de.kuei.metafora.reflectiontool.server.StartupServlet;
 import de.kuei.metafora.reflectiontool.server.xml.XMLMessage;
 import de.kuei.metafora.reflectiontool.shared.LandmarkData;
 
 public class LandmarkDataGenerator {
+
+	private static SSLSocketFactory trustAll() {
+		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+
+			public void checkClientTrusted(
+					java.security.cert.X509Certificate[] certs, String authType) {
+				// No need to implement.
+			}
+
+			public void checkServerTrusted(
+					java.security.cert.X509Certificate[] certs, String authType) {
+				// No need to implement.
+			}
+		} };
+
+		// Install the all-trusting trust manager
+		try {
+			SSLContext sc = SSLContext.getInstance("SSL");
+			sc.init(null, trustAllCerts, new java.security.SecureRandom());
+			HttpsURLConnection
+					.setDefaultSSLSocketFactory(sc.getSocketFactory());
+			return sc.getSocketFactory();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static HostnameVerifier getAnalphabeticVerifier() {
+		HostnameVerifier verifier = new HostnameVerifier() {
+
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		};
+		return verifier;
+	}
 
 	public static LandmarkData generateLandmark(XMLMessage message,
 			boolean started, boolean finished, String landmarkColor, int index) {
@@ -43,6 +93,13 @@ public class LandmarkDataGenerator {
 				URL url = new URL(urlText);
 				HttpURLConnection con = (HttpURLConnection) url
 						.openConnection();
+
+				if (con instanceof HttpsURLConnection) {
+					((HttpsURLConnection) con).setSSLSocketFactory(trustAll());
+					((HttpsURLConnection) con)
+							.setHostnameVerifier(getAnalphabeticVerifier());
+				}
+
 				con.setRequestMethod("HEAD");
 				if (con.getResponseCode() == HttpURLConnection.HTTP_OK) {
 					l2l2Url = urlText;
