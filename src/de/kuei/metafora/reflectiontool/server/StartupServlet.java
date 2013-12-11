@@ -16,8 +16,8 @@ import de.kuei.metafora.xmppbridge.xmpp.XmppMUCManager;
 public class StartupServlet extends HttpServlet {
 
 	public static XmppMUC command = null;
-	public static String tomcatserver = "https://metaforaserver.ku.de";
-	public static String apacheserver = "http://metaforaserver.ku.de";
+	public static String tomcatserver = "https://metafora-project.de";
+	public static String apacheserver = "http://metafora-project.de";
 
 	public void init() {
 
